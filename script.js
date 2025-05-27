@@ -76,6 +76,51 @@ if (currentUser) {
   });
 }
 
+function signUpUser() {
+  const email = document.getElementById('user-email').value;
+  const password = document.getElementById('user-password').value;
+
+  const attributeList = [];
+  const dataEmail = {
+    Name: 'email',
+    Value: email
+  };
+  const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+  attributeList.push(attributeEmail);
+
+  userPool.signUp(email, password, attributeList, null, function(err, result) {
+    if (err) {
+      document.getElementById("auth-message").innerText = `❌ ${err.message || JSON.stringify(err)}`;
+      return;
+    }
+
+    document.getElementById("auth-message").innerText = "✅ Sign up successful! Check your email for the confirmation code.";
+    document.getElementById("auth-section").style.display = "none";
+    document.getElementById("confirm-section").style.display = "block";
+    document.getElementById("confirm-email").value = email;
+  });
+}
+
+function confirmUser() {
+  const email = document.getElementById('confirm-email').value;
+  const code = document.getElementById('confirm-code').value;
+
+  const userData = {
+    Username: email,
+    Pool: userPool
+  };
+  const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  cognitoUser.confirmRegistration(code, true, function(err, result) {
+    if (err) {
+      document.getElementById("confirm-message").innerText = `❌ ${err.message || JSON.stringify(err)}`;
+      return;
+    }
+    document.getElementById("confirm-message").innerText = "✅ Account confirmed! You can now log in.";
+    document.getElementById("confirm-section").style.display = "none";
+    document.getElementById("auth-section").style.display = "block";
+  });
+}
 
 
 function showForgotPassword() {
