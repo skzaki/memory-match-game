@@ -439,19 +439,40 @@ function animateCircles() {
 
 animateCircles();
 
-// THIS CODE IS NO LONGER NEEDED AFTER ADDING THE LOGIN PAGE 
-// window.addEventListener('DOMContentLoaded', () => {
-//       setTimeout(() => {
-//         document.getElementById('main').classList.add('show');
-//         document.getElementById('reset-btn').classList.add('show');
-//         document.getElementById('heading').classList.add('show');
-//       }, 50);
-//     });
+// delay in login page  
+window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.getElementById('auth-section').classList.add('show');
+      }, 50);
+    });
 
-function myFunction() {
-   var element = document.getElementById('eyeball')
-   element.classList.toggle("dark-mode");
+
+// dark mode 
+function darkMode() {
+   var eyeball = document.getElementById('eyeball');
+   var heading = document.getElementById('heading');
+   var timer = document.getElementById('timer');
+   var highscore = document.getElementById('high-score');
+   var moves = document.getElementById("moves");
+   var logoutbtn = document.getElementById("logout-btn");
+   var resetbtn = document.getElementById("reset-btn");
+   var choosetheme = document.getElementById("choose-theme");
+   var selector = document.getElementById("theme-select");
+   var gameboard = document.getElementById("game-board");
+   gameBoard.classList.toggle("dark-mode");
+   selector.classList.toggle("dark-mode");
+   choosetheme.classList.toggle("dark-mode");
+   resetbtn.classList.toggle("dark-mode");
+   logoutbtn.classList.toggle("dark-mode");
+   moves.classList.toggle("dark-mode");
+   highscore.classList.toggle("dark-mode");
+   timer.classList.toggle("dark-mode");
+   heading.classList.toggle("dark-mode");
+   eyeball.classList.toggle("dark-mode");
 }
+
+
+
 
 document.getElementById("logout-btn").addEventListener("click", () => {
   const user = userPool.getCurrentUser();
