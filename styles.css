@@ -25,7 +25,7 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.568);
   padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -33,6 +33,9 @@ body {
   max-width: 400px;
   width: 90%;
   backdrop-filter: blur(6px);
+  visibility: hidden; /* Initially hidden */
+  opacity: 0;          /* Fully transparent */
+  transition: all 1s linear 2s, opacity 1s linear 2s;
 }
 
 .auth-heading {
@@ -144,7 +147,7 @@ h1 {
 #timer {font-size:0.8rem; color:black; margin-right: 1rem}
 #timer::before { content: "🕒 "; margin-right: 5px; font-size:0.8rem;; color: black; }
 #high-score { font-size:0.8rem; color: black; margin-right: 1rem;}
-#moves { font-size:12px; color: black; }
+#moves { font-size: 0.8rem; color: black; }
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 120px);
@@ -170,7 +173,7 @@ h1 {
 	transform: scale(1.01);
     transition: all 0.3s;
 }
-.main.show, .btn.show ,.heading.show {
+.main.show, .btn.show ,.heading.show{
   margin-bottom: 1rem;
   visibility: visible; /* Show the element after the delay */
   opacity: 1;
@@ -380,6 +383,7 @@ html, body {
 	min-width: 800px;
 	height: 100vh;
 	min-height: 600px;
+	
 	background: linear-gradient(-45deg, #8691b3, #edeef3);
 	z-index: -1;
 }
@@ -1071,25 +1075,6 @@ html, body {
 	display: none;
 }
 
-#eyeball {
-  position: relative;
-  overflow: hidden;
-}
-
-#eyeball::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(90deg,rgba(9, 0, 48, 1) 0%, rgba(0, 0, 0, 1) 100%, rgba(0, 0, 0, 1) 100%);
-}
-#eyeball.dark-mode::after {
-  opacity: 1;
-}
-
 /* dark mode button  */
 
 .theme-toggle{
@@ -1220,6 +1205,8 @@ button{
   }
 }
 
+/* logout button and reset button section */
+
 #logout-btn {
   display: none;
   margin: auto;
@@ -1240,7 +1227,7 @@ button{
   transition: all 0.5s;
   align-items: center;
   user-select: none;
-  font-weight: normal;
+  font-weight: bolder;
   color: black;
 }
 
@@ -1265,7 +1252,7 @@ button{
   align-items: center;
   justify-content: center;
   user-select: none;
-  font-weight: normal;
+  font-weight: bolder;
   color: black;
 }
 
@@ -1277,6 +1264,7 @@ button{
 	font-size: 0.8rem;
 }
 
+/* forget password button  */
 .forget{
   background-color: transparent;
   margin: auto;
@@ -1287,7 +1275,7 @@ button{
   text-align: center;
 }
 
-
+/* login section delay  */
 #reset-btn:hover, #logout-btn:hover {
   border: 1px solid black;
   transform: scale(1.05);
@@ -1299,4 +1287,15 @@ button{
 
 #reset-btn:active, #logout-btn:active{
   transform: scale(0.95) rotateZ(1.7deg);
+}
+
+.auth-container.show {
+  margin-bottom: 1rem;
+  visibility: visible; /* Show the element after the delay */
+  opacity: 1;
+}
+
+#eyeball {
+  position: relative;
+  overflow: hidden;
 }
