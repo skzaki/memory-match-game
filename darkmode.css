@@ -1,0 +1,46 @@
+
+#eyeball::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg,rgba(4, 0, 31, 1) 0%, rgba(0, 0, 0, 1) 100%, rgba(51, 0, 0, 0) 88%);
+
+
+
+}
+#eyeball.dark-mode::after {
+  opacity: 1;
+}
+
+#heading.dark-mode{
+    color: azure;
+}
+
+#timer.dark-mode, #high-score.dark-mode, #moves.dark-mode{
+    background: rgba(114, 114, 114, 0.58);
+    border: 1px solid rgb(136, 136, 136);
+    box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+    color: aliceblue;
+}
+
+#logout-btn.dark-mode, #reset-btn.dark-mode{
+    background-color: rgba(97, 97, 97, 0.575);
+    color: aliceblue;
+}
+
+#choose-theme.dark-mode{
+    color: rgb(143, 143, 143);
+}
+
+#theme-select.dark-mode{
+    color: rgb(0, 0, 0);
+    transition: all 0.3s;
+}
+#game-board.dark-mode{
+    transition: all 0.5s ease;
+    background: linear-gradient(90deg,rgba(114, 114, 114, 0.356) 0%, rgba(56, 40, 92, 0.479) 99%);
+}
