@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photo Matching Game</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="darkmode.css">
   <script src="https://unpkg.com/amazon-cognito-identity-js@6.0.1/dist/amazon-cognito-identity.min.js"></script>
 </head>
 <body>
@@ -49,6 +50,8 @@
       <input type="password" id="user-password" placeholder="Password" class="auth-input" />
       <button onclick="loginUser()" class="auth-btn">Login</button>
       <button onclick="signUpUser()" class="auth-btn">Sign Up</button>
+      <!--  "Forgot Password"  -->
+      <p class="forget"><a href="#" onclick="showForgotPassword()">Forgot Password?</a></p>
       <p id="auth-message" class="auth-message"></p>
     </div>
 
@@ -61,14 +64,11 @@
       <p id="confirm-message" class="auth-message"></p>
     </div>
 
-    <!-- Add "Forgot Password" link below login -->
-    <p class="forget"><a href="#" onclick="showForgotPassword()">Forgot Password?</a></p>
-
     <div id="container" class="container">
   
   <h1 class="heading" id="heading">🧠 Photo Matching Game</h1>
     <div class="main" id="main">
-      <button class="theme-toggle" id="theme-toggle" title="Toggles light & dark" aria-label="auto" aria-live="polite" onclick="myFunction()">
+      <button class="theme-toggle" id="theme-toggle" title="Toggles light & dark" aria-label="auto" aria-live="polite" onclick="darkMode()">
         
           <svg class="sun-and-moon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
             <mask class="moon" id="moon-mask">
@@ -95,7 +95,7 @@
   <div id="moves" class="non-bt">Moves: 0</div>
     </div>
     <div id="game-board" class="grid"></div>
-    <div class="themes">
+    <div id="choose-theme" class="themes">
         <label for="theme-select"><strong>Choose Theme:</strong></label>
       <select id="theme-select">
         <option value="fruits">Fruits</option>
@@ -104,8 +104,8 @@
       </select>
   </div>
   <div class="buttons">
-        <button id="logout-btn">🚪 Logout</button>
-        <button id="reset-btn">🔄 New Game</button>
+        <button id="logout-btn">Logout</button>
+        <button id="reset-btn">New Game</button>
             <!-- Forgot Password Section -->
         <div id="forgot-section" class="auth-container" style="display: none;">
           <h3 class="auth-heading">Forgot Password</h3>
