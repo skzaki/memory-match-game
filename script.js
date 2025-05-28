@@ -286,7 +286,7 @@ const timerElement = document.getElementById("timer");
 let highScore = localStorage.getItem("highScore_" + selectedTheme) || null;
 const highScoreElement = document.getElementById("high-score");
 
-const flipSound = new Audio("https://www.soundjay.com/button/sounds/button-16.mp3");
+const flipSound = new Audio("https://aws-image-matching-game.s3.us-east-1.amazonaws.com/WhatsApp+Audio+2025-05-28+at+22.37.00_f6011365.mp3");
 
 function startTimer() {
   timer = setInterval(() => {
@@ -440,11 +440,11 @@ function animateCircles() {
 animateCircles();
 
 // delay in login page  
-window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.getElementById('auth-section').classList.add('show');
-      }, 50);
-    });
+// window.addEventListener('DOMContentLoaded', () => {
+//       setTimeout(() => {
+//         document.getElementById('auth-section').classList.add('show');
+//       }, 50);
+//     });
 
 
 // dark mode 
