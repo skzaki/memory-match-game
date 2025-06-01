@@ -1,0 +1,79 @@
+/* Responsive styles for matching game */
+
+@media screen and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 0.8rem;
+  }
+
+  .card {
+    width: 100px;
+    height: 100px;
+  }
+
+  .card-front,
+  .card-back img {
+    font-size: 1.3rem;
+  }
+
+  .non-bt {
+    font-size: 0.8rem;
+    padding: 8px 20px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 100px);
+  }
+
+  .card {
+    width: 100px;
+    height: 100px;
+  }
+
+  .scoring {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #timer,
+  #high-score,
+  #moves {
+    margin: 4px auto;
+    font-size: 0.75rem;
+  }
+
+  #theme-select {
+    width: 100%;
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, 80px);
+    grid-gap: 0.6rem;
+    padding: 10px;
+  }
+
+  .card {
+    width: 80px;
+    height: 80px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  #timer,
+  #high-score,
+  #moves {
+    font-size: 0.7rem;
+  }
+}
