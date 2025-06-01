@@ -2,6 +2,15 @@ const themeSelect = document.getElementById("theme-select");
 const selectedTheme = localStorage.getItem("selectedTheme") || "fruits";
 themeSelect.value = selectedTheme;
 
+// AWS Configuration
+AWS.config.update({
+  region: 'us-east-1',
+  accessKeyId: 'AKIA4TGIVNWAL54HUZUY',
+  secretAccessKey: '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'
+});
+
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
+
 // Cognito Configuration
 const poolData = {
   UserPoolId: 'us-east-1_PUImPipJ4',
@@ -26,22 +35,27 @@ function loginUser() {
 
   const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
   cognitoUser.authenticateUser(authDetails, {
-    onSuccess: function (result) {
-      
-      
-      
+    onSuccess: async function (result) {
       document.getElementById("auth-message").innerText = "✅ Login successful!";
       document.getElementById("auth-section").style.display = "none";
-      document.getElementById("forgot-section").style.display = "none";
+      document.getElementById("auth-section").style.display = "none";
       document.getElementById("confirm-section").style.display = "none";
       document.getElementById("container").style.display = "block";
+
+      // Fetch and display user's best scores
+      const scores = await getUserBestScores(email);
+      if (scores.length > 0) {
+        // Update high score with the best time from DynamoDB
+        const bestScore = Math.min(...scores.map(score => score.timeInSeconds));
+        localStorage.setItem('highScore', bestScore);
+        updateHighScoreDisplay();
+      }
 
       setTimeout(() => {
         document.getElementById('main').classList.add('show');
         document.getElementById('reset-btn').classList.add('show');
         document.getElementById('heading').classList.add('show');
       }, 500);
-
     },
     onFailure: function (err) {
       document.getElementById("auth-message").innerText = `❌ ${err.message || JSON.stringify(err)}`;
@@ -268,25 +282,212 @@ function getImageUrls(theme) {
   return themes[theme];
 }
 
-const imageUrls = getImageUrls(selectedTheme);
-let cards = [...imageUrls, ...imageUrls].sort(() => 0.5 - Math.random());
-const gameBoard = document.getElementById("game-board");
-
+// Game variables
 let firstCard = null;
 let secondCard = null;
 let lockBoard = false;
 let matchedPairs = 0;
 let moves = 0;
-const movesElement = document.getElementById("moves");
-
 let timer;
 let time = 0;
+let cards = [];
+let imageUrls = [];
+
+const movesElement = document.getElementById("moves");
 const timerElement = document.getElementById("timer");
-
-let highScore = localStorage.getItem("highScore_" + selectedTheme) || null;
 const highScoreElement = document.getElementById("high-score");
+const gameBoard = document.getElementById("game-board");
+let highScore = localStorage.getItem("highScore_" + selectedTheme) || null;
 
-const flipSound = new Audio("https://aws-image-matching-game.s3.us-east-1.amazonaws.com/WhatsApp+Audio+2025-05-28+at+22.37.00_f6011365.mp3");
+const flipSound = new Audio("https://www.soundjay.com/button/sounds/button-16.mp3");
+
+// Initialize the game board
+function initializeGame(theme) {
+  // Reset game state
+  firstCard = null;
+  secondCard = null;
+  lockBoard = false;
+  matchedPairs = 0;
+  moves = 0;
+  time = 0;
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+  
+  // Update moves and timer display
+  movesElement.textContent = "Moves: 0";
+  timerElement.textContent = "Time: 00:00";
+  
+  // Get images for selected theme
+  imageUrls = getImageUrls(theme);
+  cards = [...imageUrls, ...imageUrls].sort(() => 0.5 - Math.random());
+  
+  // Clear existing cards
+  gameBoard.innerHTML = '';
+  
+  // Create and add cards
+  cards.forEach((url) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    const cardInner = document.createElement("div");
+    cardInner.classList.add("card-inner");
+
+    const front = document.createElement("div");
+    front.classList.add("card-front");
+    front.textContent = "🎴";
+
+    const back = document.createElement("div");
+    back.classList.add("card-back");
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Card image";
+    back.appendChild(img);
+
+    cardInner.appendChild(front);
+    cardInner.appendChild(back);
+    card.appendChild(cardInner);
+    card.dataset.url = url;
+
+    card.addEventListener("click", () => {
+      if (lockBoard || card.classList.contains("flipped") || firstCard === card) return;
+
+      if (time === 0 && !timer) startTimer();
+
+      flipSound.play();
+      card.classList.add("flipped");
+
+      if (!firstCard) {
+        firstCard = card;
+      } else {
+        secondCard = card;
+        incrementMoves();
+        checkMatch();
+      }
+    });
+
+    gameBoard.appendChild(card);
+  });
+  
+  // Update high score display for the current theme
+  highScore = localStorage.getItem("highScore_" + theme) || null;
+  updateHighScoreDisplay();
+}
+
+// Theme change handler
+themeSelect.addEventListener("change", () => {
+  const newTheme = themeSelect.value;
+  localStorage.setItem("selectedTheme", newTheme);
+  
+  // Get new images
+  const newImageUrls = getImageUrls(newTheme);
+  cards = [...newImageUrls, ...newImageUrls].sort(() => 0.5 - Math.random());
+  
+  // Reset game state
+  firstCard = null;
+  secondCard = null;
+  lockBoard = false;
+  matchedPairs = 0;
+  moves = 0;
+  time = 0;
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+  
+  // Update displays
+  movesElement.textContent = "Moves: 0";
+  timerElement.textContent = "Time: 00:00";
+  
+  // Clear and rebuild game board
+  gameBoard.innerHTML = '';
+  
+  // Create new cards
+  cards.forEach((url) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    const cardInner = document.createElement("div");
+    cardInner.classList.add("card-inner");
+
+    const front = document.createElement("div");
+    front.classList.add("card-front");
+    front.textContent = "🎴";
+
+    const back = document.createElement("div");
+    back.classList.add("card-back");
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Card image";
+    back.appendChild(img);
+
+    cardInner.appendChild(front);
+    cardInner.appendChild(back);
+    card.appendChild(cardInner);
+    card.dataset.url = url;
+
+    card.addEventListener("click", () => {
+      if (lockBoard || card.classList.contains("flipped") || firstCard === card) return;
+
+      if (time === 0 && !timer) startTimer();
+
+      flipSound.play();
+      card.classList.add("flipped");
+
+      if (!firstCard) {
+        firstCard = card;
+      } else {
+        secondCard = card;
+        incrementMoves();
+        checkMatch();
+      }
+    });
+
+    gameBoard.appendChild(card);
+  });
+  
+  // Update high score for new theme
+  highScore = localStorage.getItem("highScore_" + newTheme) || null;
+  updateHighScoreDisplay();
+});
+
+// Initialize game when document is ready
+document.addEventListener('DOMContentLoaded', () => {
+  initializeGame(selectedTheme);
+  
+  // Check if user is already logged in
+  const currentUser = userPool.getCurrentUser();
+  if (currentUser) {
+    currentUser.getSession((err, session) => {
+      if (err || !session.isValid()) {
+        document.getElementById("auth-section").style.display = "block";
+        document.getElementById("container").style.display = "none";
+        return;
+      }
+      // User is logged in
+      document.getElementById("auth-section").style.display = "none";
+      document.getElementById("confirm-section").style.display = "none";
+      document.getElementById("forgot-section").style.display = "none";
+      document.getElementById("container").style.display = "block";
+      
+      setTimeout(() => {
+        document.getElementById('main').classList.add('show');
+        document.getElementById('reset-btn').classList.add('show');
+        document.getElementById('heading').classList.add('show');
+      }, 500);
+    });
+  } else {
+    // Show auth section for non-logged in users
+    document.getElementById("container").style.display = "none";
+    document.getElementById("auth-section").style.display = "block";
+  }
+});
+
+// Reset button handler
+document.getElementById("reset-btn").addEventListener("click", () => {
+  initializeGame(selectedTheme);
+});
 
 function startTimer() {
   timer = setInterval(() => {
@@ -296,7 +497,52 @@ function startTimer() {
 }
 
 function stopTimer() {
+  console.log('Game completed - stopTimer called');
   clearInterval(timer);
+  const finalTime = document.getElementById('timer').textContent.split(': ')[1];
+  const [minutes, seconds] = finalTime.split(':').map(Number);
+  const totalSeconds = minutes * 60 + seconds;
+  
+  console.log('Final game stats:', { minutes, seconds, totalSeconds, moves });
+  
+  // Save score when game ends
+  const currentUser = userPool.getCurrentUser();
+  if (currentUser) {
+    console.log('Current user found:', currentUser.username);
+    currentUser.getSession((err, session) => {
+      if (err) {
+        console.error('Error getting user session:', err);
+        return;
+      }
+      console.log('User session valid:', session);
+      
+      // Get user attributes to ensure we have the email
+      currentUser.getUserAttributes((attrErr, attributes) => {
+        if (attrErr) {
+          console.error('Error getting user attributes:', attrErr);
+          return;
+        }
+        
+        console.log('User attributes:', attributes);
+        const emailAttribute = attributes.find(attr => attr.Name === 'email');
+        const userEmail = emailAttribute ? emailAttribute.Value : currentUser.username;
+        
+        console.log('Attempting to save score for user:', userEmail);
+        saveScore(userEmail, totalSeconds, moves)
+          .then(() => console.log('Score saved successfully'))
+          .catch(error => console.error('Error saving score:', error));
+      });
+    });
+  } else {
+    console.error('No current user found');
+  }
+  
+  // Update high score if better than previous
+  const currentHighScore = localStorage.getItem('highScore') || Infinity;
+  if (totalSeconds < currentHighScore) {
+    localStorage.setItem('highScore', totalSeconds);
+    updateHighScoreDisplay();
+  }
 }
 
 function formatTime(totalSeconds) {
@@ -317,51 +563,6 @@ function incrementMoves() {
   moves++;
   movesElement.textContent = `Moves: ${moves}`;
 }
-
-updateHighScoreDisplay();
-
-cards.forEach((url) => {
-  const card = document.createElement("div");
-  card.classList.add("card");
-
-  const cardInner = document.createElement("div");
-  cardInner.classList.add("card-inner");
-
-  const front = document.createElement("div");
-  front.classList.add("card-front");
-  front.textContent = "🎴";
-
-  const back = document.createElement("div");
-  back.classList.add("card-back");
-  const img = document.createElement("img");
-  img.src = url;
-  img.alt = "Card image";
-  back.appendChild(img);
-
-  cardInner.appendChild(front);
-  cardInner.appendChild(back);
-  card.appendChild(cardInner);
-  card.dataset.url = url;
-
-  card.addEventListener("click", () => {
-    if (lockBoard || card.classList.contains("flipped") || firstCard === card) return;
-
-    if (time === 0 && !timer) startTimer();
-
-    flipSound.play();
-    card.classList.add("flipped");
-
-    if (!firstCard) {
-      firstCard = card;
-    } else {
-      secondCard = card;
-      incrementMoves();
-      checkMatch();
-    }
-  });
-
-  gameBoard.appendChild(card);
-});
 
 function checkMatch() {
   if (firstCard.dataset.url === secondCard.dataset.url) {
@@ -395,15 +596,6 @@ function resetTurn() {
   [firstCard, secondCard] = [null, null];
   lockBoard = false;
 }
-
-document.getElementById("reset-btn").addEventListener("click", () => {
-  location.reload();
-});
-
-themeSelect.addEventListener("change", () => {
-  localStorage.setItem("selectedTheme", themeSelect.value);
-  location.reload();
-});
 
 const coords = { x: 0, y: 0 };
 const circles = document.querySelectorAll('.circle');
@@ -440,11 +632,13 @@ function animateCircles() {
 animateCircles();
 
 // delay in login page  
-// window.addEventListener('DOMContentLoaded', () => {
-//       setTimeout(() => {
-//         document.getElementById('auth-section').classList.add('show');
-//       }, 50);
-//     });
+window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.getElementById('auth-section').classList.add('show');
+        document.getElementById('confirm-section').classList.add('show');
+        document.getElementById('forgot-section').classList.add('show');
+      }, 50);
+    });
 
 
 // dark mode 
@@ -483,3 +677,85 @@ document.getElementById("logout-btn").addEventListener("click", () => {
 });
 
 document.getElementById("logout-btn").style.display = "inline-block";
+
+// Function to save score to DynamoDB
+async function saveScore(email, timeInSeconds, moves) {
+  console.log('saveScore function called with:', { email, timeInSeconds, moves });
+  
+  const params = {
+    TableName: 'MemoryGameScores',
+    Item: {
+      userEmail: email,
+      timestamp: Date.now(),
+      timeInSeconds: parseInt(timeInSeconds),
+      moves: parseInt(moves)
+    }
+  };
+
+  console.log('DynamoDB params:', JSON.stringify(params, null, 2));
+
+  try {
+    console.log('Attempting to save to DynamoDB...');
+    const result = await dynamoDB.put(params).promise();
+    console.log('DynamoDB save result:', result);
+    console.log('Score saved successfully to DynamoDB');
+    
+    // Verify the save by immediately trying to read it back
+    try {
+      const verifyParams = {
+        TableName: 'MemoryGameScores',
+        KeyConditionExpression: 'userEmail = :email',
+        ExpressionAttributeValues: {
+          ':email': email
+        },
+        Limit: 1
+      };
+      const verifyResult = await dynamoDB.query(verifyParams).promise();
+      console.log('Verification query result:', verifyResult);
+    } catch (verifyError) {
+      console.error('Verification query failed:', verifyError);
+    }
+  } catch (error) {
+    console.error('Error saving score to DynamoDB:', error);
+    console.error('Error details:', {
+      code: error.code,
+      message: error.message,
+      statusCode: error.statusCode,
+      region: AWS.config.region,
+      table: 'MemoryGameScores'
+    });
+    
+    // Test DynamoDB connectivity
+    try {
+      console.log('Testing DynamoDB connectivity...');
+      const testParams = {
+        TableName: 'MemoryGameScores'
+      };
+      const tableInfo = await dynamoDB.describeTable(testParams).promise();
+      console.log('Table info:', tableInfo);
+    } catch (testError) {
+      console.error('DynamoDB connectivity test failed:', testError);
+    }
+  }
+}
+
+// Function to get user's best scores
+async function getUserBestScores(email) {
+  const params = {
+    TableName: 'MemoryGameScores',
+    KeyConditionExpression: 'userEmail = :email',
+    ExpressionAttributeValues: {
+      ':email': email
+    },
+    ScanIndexForward: true,
+    Limit: 5
+  };
+
+  try {
+    const result = await dynamoDB.query(params).promise();
+    return result.Items;
+  } catch (error) {
+    console.error('Error fetching scores:', error);
+    return [];
+  }
+}
