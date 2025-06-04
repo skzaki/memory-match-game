@@ -299,7 +299,7 @@ const highScoreElement = document.getElementById("high-score");
 const gameBoard = document.getElementById("game-board");
 let highScore = localStorage.getItem("highScore_" + selectedTheme) || null;
 
-const flipSound = new Audio("s3://aws-image-matching-game/card flip.mp3");
+const flipSound = new Audio("https://aws-image-matching-game.s3.us-east-1.amazonaws.com/card+flip.mp3");
 
 // Initialize the game board
 function initializeGame(theme) {
