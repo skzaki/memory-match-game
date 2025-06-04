@@ -249,14 +249,14 @@ window
 function getImageUrls(theme) {
   const themes = {
     fruits: [
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/apple.jpg",
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/banana.jpg",
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/grapes.jpg",
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/kiwi.jpg",
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/melon.jpg",
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/orange.jpg",
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/papaya.jpg",
-      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/pineapple.jpg"
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/apple.jpg",
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/banana.jpg",
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/grapes.jpg",
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/kiwi.jpg",
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/melon.jpg",
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/orange.jpg",
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/papaya.jpg",
+      "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/fruits/pineapple.jpg"
     ],
     animals: [
       "https://aws-image-matching-game.s3.us-east-1.amazonaws.com/animals/bear.jpg",
